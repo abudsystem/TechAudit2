@@ -5,48 +5,51 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.laboratorio.AddEditLaboratorioActivity">
+    android:padding="16dp"
+    tools:context=".ui.equipo.AddEditEquipoActivity">
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilNombre"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Nombre del laboratorio"
-        app:layout_constraintTop_toTopOf="parent"
+        android:hint="Nombre del Equipo"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etNombre"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:inputType="text" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilUbicacion"
+    <TextView
+        android:id="@+id/tvLabelEstado"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Estado del Equipo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tilNombre" />
+
+    <Spinner
+        android:id="@+id/spEstado"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Ubicación"
-        app:layout_constraintTop_toBottomOf="@id/tilNombre"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvLabelEstado" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etUbicacion"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-    </com.google.android.material.textfield.TextInputLayout>
-
-
-    <com.google.android.material.button.MaterialButton
+    <Button
         android:id="@+id/btnGuardar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
         android:text="Guardar"
-        android:layout_marginTop="24dp"
-        app:layout_constraintTop_toBottomOf="@+id/tilUbicacion"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@id/spEstado" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

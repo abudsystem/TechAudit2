@@ -14,13 +14,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TechAudit2">
         <activity
-            android:name=".ui.equipo.AddEditActivity"
+            android:name=".ui.equipo.AddEditEquipoActivity"
             android:exported="false" />
         <activity
             android:name=".ui.equipo.EquipoActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.laboratorio.AddLaboratioActivity"
+            android:name=".ui.laboratorio.AddEditLaboratorioActivity"
             android:exported="false" />
         <activity
             android:name=".ui.laboratorio.MainActivity"

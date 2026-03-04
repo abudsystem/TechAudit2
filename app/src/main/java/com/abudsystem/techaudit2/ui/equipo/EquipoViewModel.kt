@@ -28,6 +28,11 @@ class EquipoViewModel (application: Application)
             .asLiveData()
     }
 
+    fun getById(id: Int, onResult: (Equipo?) -> Unit) = viewModelScope.launch {
+        val equipo = repository.getById(id)
+        onResult(equipo)
+    }
+
     fun insert(equipo: Equipo) = viewModelScope.launch {
         repository.insert(equipo)
     }
