@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.abudsystem.techaudit2.data.local.entity.Laboratorio
 import com.abudsystem.techaudit2.databinding.ItemLaboratorioBinding
 
+/*
 class LaboratorioAdapter (
     val listaLaboratorios: MutableList<Laboratorio>,
     private val onItemSelected: (Laboratorio) -> Unit
@@ -56,6 +57,60 @@ class LaboratorioAdapter (
         // Click
         holder.itemView.setOnClickListener {
             onItemSelected(laboratorio)
+        }
+    }
+}
+*/
+class LaboratorioAdapter(
+    val listaLaboratorios: MutableList<Laboratorio>,
+    private val onItemSelected: (Laboratorio) -> Unit
+) : RecyclerView.Adapter<LaboratorioAdapter.LaboratorioViewHolder>() {
+
+    inner class LaboratorioViewHolder(
+        val binding: ItemLaboratorioBinding
+    ) : RecyclerView.ViewHolder(binding.root)
+
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): LaboratorioViewHolder {
+
+        val binding = ItemLaboratorioBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+
+        return LaboratorioViewHolder(binding)
+    }
+
+    override fun getItemCount(): Int {
+        return listaLaboratorios.size
+    }
+
+    fun actualizarLista(nuevaLista: List<Laboratorio>) {
+        listaLaboratorios.clear()
+        listaLaboratorios.addAll(nuevaLista)
+        notifyDataSetChanged()
+    }
+
+    override fun onBindViewHolder(
+        holder: LaboratorioViewHolder,
+        position: Int
+    ) {
+
+        val laboratorio = listaLaboratorios[position]
+
+        holder.binding.tvNombreLaboratorio.text = laboratorio.nombre
+        holder.binding.tvUbicacionLaboratorio.text = laboratorio.edificio
+
+        holder.itemView.setOnClickListener {
+
+            val pos = holder.bindingAdapterPosition
+            if (pos != RecyclerView.NO_POSITION) {
+                onItemSelected(listaLaboratorios[pos])
+            }
+
         }
     }
 }

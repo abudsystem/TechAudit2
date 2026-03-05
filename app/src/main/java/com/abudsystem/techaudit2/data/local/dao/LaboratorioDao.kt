@@ -31,4 +31,7 @@ interface LaboratorioDao {
     @Query("SELECT * FROM laboratorios")
     suspend fun getAllForSync(): List<Laboratorio>
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(lista: List<Laboratorio>)
+
 }

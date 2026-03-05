@@ -11,6 +11,7 @@ import com.abudsystem.techaudit2.databinding.ActivityMainBinding
 // importaciones
 
 import android.content.Intent
+import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -43,21 +44,42 @@ class MainActivity : AppCompatActivity() {
 
         //viewModel = ViewModelProvider(this)[LaboratorioViewModel::class.java]
 
-
-        viewModel.laboratorios.observe(this) { listaActualizada ->
-            adapter.actualizarLista(listaActualizada)
-        }
-
         setupRecyclerView()   // ← AGREGAR ESTO
         configurarDeslizarParaBorrar()
 
+
         viewModel.laboratorios.observe(this) { listaActualizada ->
             adapter.actualizarLista(listaActualizada)
         }
+
+        viewModel.loading.observe(this) { cargando ->
+
+            if (cargando) {
+                binding.progressSync.visibility = View.VISIBLE
+            } else {
+                binding.progressSync.visibility = View.GONE
+            }
+        }
+
+        /*
+        viewModel.laboratorios.observe(this) { listaActualizada ->
+            adapter.actualizarLista(listaActualizada)
+        }*/
 
         binding.fabAgregar.setOnClickListener {
             val intent = Intent(this, AddEditLaboratorioActivity::class.java)
             startActivity(intent)
+        }
+
+        binding.btnSincronizar.setOnClickListener {
+
+            viewModel.sincronizar()
+
+            Toast.makeText(
+                this,
+                "Sincronizando con servidor...",
+                Toast.LENGTH_SHORT
+            ).show()
         }
 
         enableEdgeToEdge()
