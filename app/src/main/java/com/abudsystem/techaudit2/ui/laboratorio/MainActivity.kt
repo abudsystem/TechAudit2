@@ -1,78 +1,36 @@
 package com.abudsystem.techaudit2.ui.laboratorio
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.abudsystem.techaudit2.databinding.ActivityMainBinding
-//import kotlin.io.root
-
-// importaciones
-
-import android.content.Intent
-import android.view.View
-import android.widget.Toast
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.abudsystem.techaudit2.databinding.ActivityMainBinding
 import com.abudsystem.techaudit2.ui.equipo.EquipoActivity
-import com.abudsystem.techaudit2.ui.laboratorio.AddEditLaboratorioActivity
-import com.abudsystem.techaudit2.ui.laboratorio.LaboratorioViewModel
-//import androidx.lifecycle.ViewModelProvider
-import androidx.activity.viewModels
-
-// fin imporataciones
-
-
-
-
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-
-    //private lateinit var viewModel: LaboratorioViewModel
-    private val viewModel: LaboratorioViewModel by viewModels ()
+    private val viewModel: LaboratorioViewModel by viewModels()
     private lateinit var adapter: LaboratorioAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        //viewModel = ViewModelProvider(this)[LaboratorioViewModel::class.java]
-
-        setupRecyclerView()   // ← AGREGAR ESTO
+        setupRecyclerView()
         configurarDeslizarParaBorrar()
-
-
-        viewModel.laboratorios.observe(this) { listaActualizada ->
-            adapter.actualizarLista(listaActualizada)
-        }
-
-        viewModel.loading.observe(this) { cargando ->
-
-            if (cargando) {
-
-                //binding.progressSync.visibility = View.VISIBLE
-                binding.progressSync.visibility = android.view.View.VISIBLE
-
-
-            } else {
-                //binding.progressSync.visibility = View.GONE
-                binding.progressSync.visibility = android.view.View.GONE
-
-
-
-            }
-        }
-
-        /*
-        viewModel.laboratorios.observe(this) { listaActualizada ->
-            adapter.actualizarLista(listaActualizada)
-        }*/
+        observarViewModel()
 
         binding.fabAgregar.setOnClickListener {
             val intent = Intent(this, AddEditLaboratorioActivity::class.java)
@@ -80,17 +38,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnSincronizar.setOnClickListener {
-
             viewModel.sincronizar()
-
-            Toast.makeText(
-                this,
-                "Sincronizando con servidor...",
-                Toast.LENGTH_SHORT
-            ).show()
         }
 
-        enableEdgeToEdge()
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -98,12 +48,33 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun observarViewModel() {
+        viewModel.laboratorios.observe(this) { listaActualizada ->
+            adapter.actualizarLista(listaActualizada)
+        }
+
+        viewModel.loading.observe(this) { cargando ->
+            // Mostramos el contenedor de la barra de progreso
+            binding.progressContainer.visibility = if (cargando) View.VISIBLE else View.GONE
+            binding.btnSincronizar.isEnabled = !cargando
+        }
+
+        viewModel.progreso.observe(this) { p ->
+            // Actualizamos la barra de 0 a 100
+            binding.progressSync.progress = p
+            binding.tvProgressPercent.text = "Sincronizando: $p%"
+        }
+
+        viewModel.mensaje.observe(this) { mensaje ->
+            mensaje?.let {
+                Toast.makeText(this, it, Toast.LENGTH_LONG).show()
+                viewModel.limpiarMensaje()
+            }
+        }
+    }
 
     private fun setupRecyclerView() {
-
         adapter = LaboratorioAdapter(mutableListOf()) { laboratorioSeleccionado ->
-
-            // Navegar a pantalla de Equipos
             val intent = Intent(this, EquipoActivity::class.java)
             intent.putExtra("LAB_ID", laboratorioSeleccionado.id)
             intent.putExtra("LAB_NOMBRE", laboratorioSeleccionado.nombre)
@@ -115,12 +86,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun configurarDeslizarParaBorrar() {
-
         val swipeHandler = object : ItemTouchHelper.SimpleCallback(
             0,
             ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
         ) {
-
             override fun onMove(
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
@@ -128,21 +97,15 @@ class MainActivity : AppCompatActivity() {
             ): Boolean = false
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-
-                val posicion = viewHolder.adapterPosition
-                val laboratorioABorrar = adapter.listaLaboratorios[posicion]
-
-                viewModel.delete(laboratorioABorrar)
-
-                Toast.makeText(
-                    this@MainActivity,
-                    "Laboratorio eliminado",
-                    Toast.LENGTH_SHORT
-                ).show()
+                val posicion = viewHolder.bindingAdapterPosition
+                if (posicion != RecyclerView.NO_POSITION) {
+                    val laboratorioABorrar = adapter.listaLaboratorios[posicion]
+                    viewModel.delete(laboratorioABorrar)
+                    Toast.makeText(this@MainActivity, "Laboratorio eliminado", Toast.LENGTH_SHORT).show()
+                }
             }
         }
 
-        ItemTouchHelper(swipeHandler)
-            .attachToRecyclerView(binding.rvAuditoria)
+        ItemTouchHelper(swipeHandler).attachToRecyclerView(binding.rvAuditoria)
     }
 }

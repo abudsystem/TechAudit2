@@ -30,7 +30,6 @@ class LaboratorioRepository(
     suspend fun delete(laboratorio: Laboratorio) {
         laboratorioDao.delete(laboratorio)
         try {
-            // También borramos en la API
             RetrofitClient.apiService.eliminarLaboratorio(laboratorio.id)
         } catch (e: Exception) {
             e.printStackTrace()
@@ -45,12 +44,12 @@ class LaboratorioRepository(
         return laboratorioDao.getAllForSync()
     }
 
-    suspend fun sincronizar() {
-        // 1. SINCRONIZAR LABORATORIOS
-        val laboratoriosRemotos = RetrofitClient.apiService.getLaboratorios()
-        val laboratoriosLocales = laboratorioDao.getAllForSync()
+    suspend fun sincronizar(onProgress: (Int) -> Unit) {
+        var progresoActual = 0
+        val totalPasos = 4
 
-        // Remoto a Local
+        // 1. LABORATORIOS REMOTOS -> LOCAL
+        val laboratoriosRemotos = RetrofitClient.apiService.getLaboratorios()
         for (remoto in laboratoriosRemotos) {
             val local = laboratorioDao.getById(remoto.id)
             if (local == null) {
@@ -59,53 +58,68 @@ class LaboratorioRepository(
                 laboratorioDao.update(remoto)
             }
         }
+        progresoActual++
+        onProgress((progresoActual * 100) / totalPasos)
 
-        // Local a Remoto (Evitar duplicados por ID de MockAPI)
+        // 2. LABORATORIOS LOCALES -> REMOTOS
+        val laboratoriosLocales = laboratorioDao.getAllForSync()
         for (local in laboratoriosLocales) {
             val existeEnServidor = laboratoriosRemotos.any { it.id == local.id }
             if (!existeEnServidor) {
                 try {
-                    // Al crear en MockAPI, nos devuelve el objeto con el ID real del servidor
                     val labCreado = RetrofitClient.apiService.crearLaboratorio(local)
-                    // Si el ID cambió, borramos el local viejo e insertamos el nuevo
                     if (labCreado.id != local.id) {
-                        laboratorioDao.delete(local)
+                        // Solución al CASCADE: Obtener equipos antes de tocar el lab
+                        val equiposDelLab = equipoDao.getEquiposByLaboratorioSync(local.id)
+                        
+                        // Insertar el nuevo laboratorio
                         laboratorioDao.insert(labCreado)
                         
-                        // Actualizar equipos vinculados al nuevo ID del laboratorio
-                        val equiposDelLab = equipoDao.getEquiposByLaboratorioSync(local.id)
+                        // Mover equipos al nuevo ID (insertamos copias con nuevo ID)
                         for (equipo in equiposDelLab) {
-                            val equipoActualizado = equipo.copy(laboratorioId = labCreado.id)
-                            equipoDao.update(equipoActualizado)
+                            equipoDao.insert(equipo.copy(laboratorioId = labCreado.id))
                         }
+                        
+                        // Borrar el lab viejo (esto limpia los equipos con ID viejo por CASCADE)
+                        laboratorioDao.delete(local)
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
         }
+        progresoActual++
+        onProgress((progresoActual * 100) / totalPasos)
 
-        // 2. SINCRONIZAR EQUIPOS
+        // 3. EQUIPOS REMOTOS -> LOCAL
         val equiposRemotos = RetrofitClient.apiService.getEquipos()
-        val equiposLocales = equipoDao.getAllForSync()
-
+        val labsActualesIds = laboratorioDao.getAllForSync().map { it.id }.toSet()
+        
         for (remoto in equiposRemotos) {
-            val local = equipoDao.getById(remoto.id)
-            if (local == null) {
-                equipoDao.insert(remoto)
-            } else if (local != remoto) {
-                equipoDao.update(remoto)
+            // Validar FK antes de insertar: Solo si el laboratorioId existe localmente
+            if (labsActualesIds.contains(remoto.laboratorioId)) {
+                val local = equipoDao.getById(remoto.id)
+                if (local == null) {
+                    equipoDao.insert(remoto)
+                } else if (local != remoto) {
+                    equipoDao.update(remoto)
+                }
             }
         }
+        progresoActual++
+        onProgress((progresoActual * 100) / totalPasos)
 
+        // 4. EQUIPOS LOCALES -> REMOTOS
+        val equiposLocales = equipoDao.getAllForSync()
         for (local in equiposLocales) {
             val existeEnServidor = equiposRemotos.any { it.id == local.id }
             if (!existeEnServidor) {
                 try {
                     val equipoCreado = RetrofitClient.apiService.crearEquipo(local)
                     if (equipoCreado.id != local.id) {
-                        equipoDao.delete(local)
+                        // Reemplazar localmente con el ID que asignó el servidor
                         equipoDao.insert(equipoCreado)
+                        equipoDao.delete(local)
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -113,20 +127,22 @@ class LaboratorioRepository(
             }
         }
         
-        // 3. LIMPIEZA LOCAL (Si algo se borró en el servidor, borrarlo aquí)
-        // Esto evita que lo borrado en el servidor reaparezca
-        val laboratoriosRemotosNuevos = RetrofitClient.apiService.getLaboratorios()
+        // Limpieza final: Borrar localmente lo que ya no existe en el servidor
+        val labsFinales = RetrofitClient.apiService.getLaboratorios()
         for (local in laboratoriosLocales) {
-            if (!laboratoriosRemotosNuevos.any { it.id == local.id }) {
+            if (!labsFinales.any { it.id == local.id }) {
                 laboratorioDao.delete(local)
             }
         }
         
-        val equiposRemotosNuevos = RetrofitClient.apiService.getEquipos()
-        for (local in equiposLocales) {
-            if (!equiposRemotosNuevos.any { it.id == local.id }) {
+        val equiposFinales = RetrofitClient.apiService.getEquipos()
+        val equiposLocalesActuales = equipoDao.getAllForSync()
+        for (local in equiposLocalesActuales) {
+            if (!equiposFinales.any { it.id == local.id }) {
                 equipoDao.delete(local)
             }
         }
+
+        onProgress(100)
     }
 }
