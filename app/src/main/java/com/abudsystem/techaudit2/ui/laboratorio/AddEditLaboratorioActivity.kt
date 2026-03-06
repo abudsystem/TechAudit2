@@ -13,6 +13,7 @@ import com.abudsystem.techaudit2.data.local.entity.Laboratorio
 import com.abudsystem.techaudit2.data.repository.LaboratorioRepository
 import com.abudsystem.techaudit2.databinding.ActivityAddEditBinding
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 class AddEditLaboratorioActivity : AppCompatActivity() {
 
@@ -29,7 +30,7 @@ class AddEditLaboratorioActivity : AppCompatActivity() {
 
         // 🔹 Inicializar database y repository correctamente
         val database = AuditDatabase.getDatabase(this)
-        repository = LaboratorioRepository(database.laboratorioDao())
+        repository = LaboratorioRepository(database.laboratorioDao(), database.equipoDao())
 
         obtenerLaboratorioSiExiste()
         configurarBoton()
@@ -77,7 +78,7 @@ class AddEditLaboratorioActivity : AppCompatActivity() {
             if (laboratorioEditar == null) {
 
                 val nuevoLaboratorio = Laboratorio(
-                    id = 0, // si es autoGenerate = true
+                    id = UUID.randomUUID().toString(),
                     nombre = nombre,
                     edificio = edificio
                 )

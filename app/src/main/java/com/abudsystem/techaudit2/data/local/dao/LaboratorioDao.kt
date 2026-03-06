@@ -11,6 +11,9 @@ interface LaboratorioDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(laboratorio: Laboratorio)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(laboratorio: List<Laboratorio>)
+
     // ACTUALIZAR
     @Update
     suspend fun update(laboratorio: Laboratorio)
@@ -25,13 +28,11 @@ interface LaboratorioDao {
 
     // OBTENER UNO POR ID
     @Query("SELECT * FROM laboratorios WHERE id = :id")
-    suspend fun getById(id: Int): Laboratorio?
+    suspend fun getById(id: String): Laboratorio?
 
     // OBTENER TODOS PARA SINCRONIZAR (sin Flow)
     @Query("SELECT * FROM laboratorios")
     suspend fun getAllForSync(): List<Laboratorio>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(lista: List<Laboratorio>)
 
 }

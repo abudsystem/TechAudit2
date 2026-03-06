@@ -18,7 +18,7 @@ import com.abudsystem.techaudit2.data.local.dao.LaboratorioDao
 
 
 
-@Database(entities = [Equipo::class, Laboratorio::class], version = 2, exportSchema = false)
+@Database(entities = [Equipo::class, Laboratorio::class], version = 1, exportSchema = false)
 @TypeConverters(Converters::class)
 
 abstract class AuditDatabase: RoomDatabase() {

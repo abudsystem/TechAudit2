@@ -1,4 +1,5 @@
 package com.abudsystem.techaudit2.data.remote
+import com.abudsystem.techaudit2.data.local.entity.Equipo
 import com.abudsystem.techaudit2.data.local.entity.Laboratorio
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -27,4 +28,23 @@ interface ApiService {
         @Path("id") id: String
     )
 
+    // Endpoints para Equipos
+    @GET("equipos")
+    suspend fun getEquipos(): List<Equipo>
+
+    @POST("equipos")
+    suspend fun crearEquipo(
+        @Body equipo: Equipo
+    ): Equipo
+
+    @PUT("equipos/{id}")
+    suspend fun actualizarEquipo(
+        @Path("id") id: String,
+        @Body equipo: Equipo
+    ): Equipo
+
+    @DELETE("equipos/{id}")
+    suspend fun eliminarEquipo(
+        @Path("id") id: String
+    )
 }

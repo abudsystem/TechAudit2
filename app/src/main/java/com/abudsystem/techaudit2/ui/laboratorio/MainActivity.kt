@@ -55,9 +55,17 @@ class MainActivity : AppCompatActivity() {
         viewModel.loading.observe(this) { cargando ->
 
             if (cargando) {
-                binding.progressSync.visibility = View.VISIBLE
+
+                //binding.progressSync.visibility = View.VISIBLE
+                binding.progressSync.visibility = android.view.View.VISIBLE
+
+
             } else {
-                binding.progressSync.visibility = View.GONE
+                //binding.progressSync.visibility = View.GONE
+                binding.progressSync.visibility = android.view.View.GONE
+
+
+
             }
         }
 

@@ -23,11 +23,14 @@ interface EquipoDao {
         SELECT * FROM equipos
         WHERE laboratorioId = :labId
     """)
-    fun getEquiposByLaboratorio(labId: Int): Flow<List<Equipo>>
+    fun getEquiposByLaboratorio(labId: String): Flow<List<Equipo>>
+
+    @Query("SELECT * FROM equipos WHERE laboratorioId = :labId")
+    suspend fun getEquiposByLaboratorioSync(labId: String): List<Equipo>
 
     // OBTENER UNO POR ID
     @Query("SELECT * FROM equipos WHERE id = :id")
-    suspend fun getById(id: Int): Equipo?
+    suspend fun getById(id: String): Equipo?
 
     // OBTENER TODOS PARA SINCRONIZAR
     @Query("SELECT * FROM equipos")

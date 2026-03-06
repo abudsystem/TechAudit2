@@ -21,14 +21,14 @@ class EquipoViewModel (application: Application)
     }
 
     // 🔹 Obtener equipos por laboratorio dinámicamente
-    fun getEquiposByLaboratorio(labId: Int):
+    fun getEquiposByLaboratorio(labId: String):
             LiveData<List<Equipo>> {
         return repository
             .getEquiposByLaboratorio(labId)
             .asLiveData()
     }
 
-    fun getById(id: Int, onResult: (Equipo?) -> Unit) = viewModelScope.launch {
+    fun getById(id: String, onResult: (Equipo?) -> Unit) = viewModelScope.launch {
         val equipo = repository.getById(id)
         onResult(equipo)
     }

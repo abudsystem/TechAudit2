@@ -29,9 +29,10 @@ enum class EstadoEquipo {
 
 @Parcelize
 data class Equipo (
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    //@PrimaryKey(autoGenerate = true)
+    @PrimaryKey
+    val id: String,
     val nombre: String,
     val estado: EstadoEquipo = EstadoEquipo.PENDIENTE,
-    val laboratorioId: Int
+    val laboratorioId: String
 ): Parcelable

@@ -52,6 +52,10 @@ class EquipoAdapter(
 
     override fun getItemCount(): Int = listaEquipos.size
 
+    fun getEquipoAt(position: Int): Equipo {
+        return listaEquipos[position]
+    }
+
     fun actualizarLista(nuevaLista: List<Equipo>) {
         listaEquipos.clear()
         listaEquipos.addAll(nuevaLista)

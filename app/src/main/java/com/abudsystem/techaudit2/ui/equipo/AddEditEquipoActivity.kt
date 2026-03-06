@@ -11,20 +11,21 @@ import androidx.core.view.WindowInsetsCompat
 import com.abudsystem.techaudit2.data.local.entity.Equipo
 import com.abudsystem.techaudit2.data.local.entity.EstadoEquipo
 import com.abudsystem.techaudit2.databinding.ActivityAddEditEquipoBinding
+import java.util.UUID
 
 class AddEditEquipoActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAddEditEquipoBinding
     private val viewModel: EquipoViewModel by viewModels()
 
-    private var laboratorioId: Int = -1
-    private var equipoId: Int = -1
+    private var laboratorioId: String = ""
+    private var equipoId: String = ""
     private var modoEditar = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        
+
         binding = ActivityAddEditEquipoBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -34,9 +35,9 @@ class AddEditEquipoActivity : AppCompatActivity() {
             insets
         }
 
-        laboratorioId = intent.getIntExtra("LAB_ID", -1)
-        equipoId = intent.getIntExtra("EQUIPO_ID", -1)
-        modoEditar = equipoId != -1
+        laboratorioId = intent.getStringExtra("LAB_ID") ?: ""
+        equipoId = intent.getStringExtra("EQUIPO_ID") ?: ""
+        modoEditar = equipoId.isNotEmpty()
 
         configurarSpinner()
 
@@ -70,8 +71,7 @@ class AddEditEquipoActivity : AppCompatActivity() {
             equipo?.let {
                 binding.etNombre.setText(it.nombre)
 
-                val posicion =
-                    EstadoEquipo.values().indexOf(it.estado)
+                val posicion = EstadoEquipo.values().indexOf(it.estado)
 
                 binding.spEstado.setSelection(posicion)
             }
@@ -79,6 +79,7 @@ class AddEditEquipoActivity : AppCompatActivity() {
     }
 
     private fun guardar() {
+
         val nombre = binding.etNombre.text.toString().trim()
 
         if (nombre.isEmpty()) {
@@ -90,13 +91,12 @@ class AddEditEquipoActivity : AppCompatActivity() {
             return
         }
 
-        val estadoSeleccionado =
-            EstadoEquipo.valueOf(
-                binding.spEstado.selectedItem.toString()
-            )
+        val estadoSeleccionado = EstadoEquipo.valueOf(
+            binding.spEstado.selectedItem.toString()
+        )
 
         val equipo = Equipo(
-            id = if (modoEditar) equipoId else 0,
+            id = if (modoEditar) equipoId else UUID.randomUUID().toString(),
             nombre = nombre,
             estado = estadoSeleccionado,
             laboratorioId = laboratorioId
